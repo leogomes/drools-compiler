@@ -289,22 +289,7 @@ public final class EclipseJavaCompiler extends AbstractJavaCompiler {
             }
 
             private boolean isPackage( final String pClazzName ) {
-            	
             	return StandardClassUtils.isPackage(pClazzName);
-            	
-//                InputStream is = null;
-//                try {
-//                    is = pClassLoader.getResourceAsStream(ClassUtils.convertClassToResourcePath(pClazzName));
-//                    return is == null && !isSourceAvailable(pClazzName, pReader);
-//                } finally {
-//                    if ( is != null ) {
-//                        try {
-//                            is.close();
-//                        } catch ( IOException e ) {
-//                            throw new RuntimeException( "Unable to close stream for resource: " + pClazzName );
-//                        }
-//                    }
-//                }
             }
 
             public boolean isPackage( char[][] parentPackageName, char[] pPackageName ) {
