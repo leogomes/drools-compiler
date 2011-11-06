@@ -25,6 +25,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import org.drools.commons.jci.compilers.util.StandardClassUtils;
 import org.drools.commons.jci.problems.CompilationProblem;
 import org.drools.commons.jci.readers.ResourceReader;
 import org.drools.commons.jci.stores.ResourceStore;
@@ -216,6 +217,11 @@ public final class EclipseJavaCompiler extends AbstractJavaCompiler {
             }
 
             private NameEnvironmentAnswer findType( final String pClazzName ) {
+            	
+            	if(StandardClassUtils.isPackage(pClazzName)) {
+            		return null;
+            	}
+            		
 
                 final String resourceName = ClassUtils.convertClassToResourcePath(pClazzName);
                 
@@ -283,19 +289,22 @@ public final class EclipseJavaCompiler extends AbstractJavaCompiler {
             }
 
             private boolean isPackage( final String pClazzName ) {
-                InputStream is = null;
-                try {
-                    is = pClassLoader.getResourceAsStream(ClassUtils.convertClassToResourcePath(pClazzName));
-                    return is == null && !isSourceAvailable(pClazzName, pReader);
-                } finally {
-                    if ( is != null ) {
-                        try {
-                            is.close();
-                        } catch ( IOException e ) {
-                            throw new RuntimeException( "Unable to close stream for resource: " + pClazzName );
-                        }
-                    }
-                }
+            	
+            	return StandardClassUtils.isPackage(pClazzName);
+            	
+//                InputStream is = null;
+//                try {
+//                    is = pClassLoader.getResourceAsStream(ClassUtils.convertClassToResourcePath(pClazzName));
+//                    return is == null && !isSourceAvailable(pClazzName, pReader);
+//                } finally {
+//                    if ( is != null ) {
+//                        try {
+//                            is.close();
+//                        } catch ( IOException e ) {
+//                            throw new RuntimeException( "Unable to close stream for resource: " + pClazzName );
+//                        }
+//                    }
+//                }
             }
 
             public boolean isPackage( char[][] parentPackageName, char[] pPackageName ) {
