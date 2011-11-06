@@ -24,9 +24,11 @@ import java.util.Collection;
 import java.util.Locale;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.drools.commons.jci.compilers.util.StandardClassUtils;
 import org.drools.commons.jci.problems.CompilationProblem;
+import org.drools.commons.jci.readers.MemoryResourceReader;
 import org.drools.commons.jci.readers.ResourceReader;
 import org.drools.commons.jci.stores.ResourceStore;
 import org.drools.core.util.ClassUtils;
@@ -51,17 +53,19 @@ import org.eclipse.jdt.internal.compiler.problem.DefaultProblemFactory;
 public final class EclipseJavaCompiler extends AbstractJavaCompiler {
 
     private final EclipseJavaCompilerSettings defaultSettings;
+    
+    private static Map<String, byte[]> cache = new ConcurrentHashMap<String, byte[]>();
 
     public EclipseJavaCompiler() {
         this(new EclipseJavaCompilerSettings());
     }
 
     public EclipseJavaCompiler( final Map pSettings ) {
-        defaultSettings = new EclipseJavaCompilerSettings(pSettings);
+        this(new EclipseJavaCompilerSettings(pSettings));
     }
 
     public EclipseJavaCompiler( final EclipseJavaCompilerSettings pSettings ) {
-        defaultSettings = pSettings;
+        this.defaultSettings = pSettings;
     }
 
     final class CompilationUnit implements ICompilationUnit {
@@ -218,14 +222,27 @@ public final class EclipseJavaCompiler extends AbstractJavaCompiler {
 
             private NameEnvironmentAnswer findType( final String pClazzName ) {
             	
-            	if(StandardClassUtils.isPackage(pClazzName)) {
+            	if(isPackage(pClazzName)) {
             		return null;
             	}
             		
 
                 final String resourceName = ClassUtils.convertClassToResourcePath(pClazzName);
                 
-                final byte[] clazzBytes = pStore.read( resourceName );
+                byte[] clazzBytes = pStore.read( resourceName );
+                
+                // Try to get it from the in memory resource
+                if (clazzBytes == null && cache.containsKey( resourceName )) {
+                	
+                	clazzBytes = cache.get( resourceName );
+                	// If it's available and null, it means that the getResourceAsStream
+                	// was called before and couldn't find it.
+                	if (clazzBytes.length == 0) {
+                		return null;
+                	}
+                }
+
+                
                 if (clazzBytes != null) {
                     try {
                         return createNameEnvironmentAnswer(pClazzName, clazzBytes);
@@ -236,9 +253,11 @@ public final class EclipseJavaCompiler extends AbstractJavaCompiler {
 
                 InputStream is = null;
                 ByteArrayOutputStream baos = null;
+                
                 try {
                     is = pClassLoader.getResourceAsStream(resourceName);
                     if (is == null) {
+                    	cache.put(resourceName, new byte[0]);
                         return null;
                     }
 
@@ -249,7 +268,12 @@ public final class EclipseJavaCompiler extends AbstractJavaCompiler {
                         baos.write(buffer, 0, count);
                     }
                     baos.flush();
-                    return createNameEnvironmentAnswer(pClazzName, baos.toByteArray());
+                    
+                    byte[] byteArray = baos.toByteArray();
+					cache.put(resourceName, byteArray);
+					
+					return createNameEnvironmentAnswer(pClazzName, byteArray);
+					
                 } catch ( final IOException e ) {
                     throw new RuntimeException( "could not read class",
                                                 e );
