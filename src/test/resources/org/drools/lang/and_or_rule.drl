@@ -1,0 +1,10 @@
+
+import org.drools.Person
+
+rule simple_rule 
+  when
+    Person(name == "mark") and Cheese(type == "stilton")
+    Person(name == "mark") or Cheese(type == "stilton")
+  then
+    System.out.println( "Mark and Michael" );
+end
