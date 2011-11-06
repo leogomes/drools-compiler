@@ -230,7 +230,7 @@ public class PackageBuilder {
     public PackageBuilder(Package pkg,
                           PackageBuilderConfiguration configuration) {
         if ( configuration == null ) {
-            this.configuration = new PackageBuilderConfiguration();
+            this.configuration = PackageBuilderConfiguration.getDefaultInstance();
         } else {
             this.configuration = configuration;
         }
@@ -266,7 +266,7 @@ public class PackageBuilder {
     public PackageBuilder(RuleBase ruleBase,
                           PackageBuilderConfiguration configuration) {
         if ( configuration == null ) {
-            this.configuration = new PackageBuilderConfiguration();
+            this.configuration = PackageBuilderConfiguration.getDefaultInstance();
         } else {
             this.configuration = configuration;
         }

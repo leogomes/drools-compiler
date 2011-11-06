@@ -107,6 +107,20 @@ public class PackageBuilderConfiguration
     private boolean                           classLoaderCache        = true;
 
     private String                            defaultPackageName;
+    
+    private static PackageBuilderConfiguration defaultIntance = new PackageBuilderConfiguration();
+    
+    /**
+     * <p>An instance of PackageBuilderConfiguration that is set with default values for all properties.</p>
+     * It's the same as calling <code>new PackageBuilderConfiguration()</code>, 
+     * but since PackageBuilderConfiguration is an immutable object, you should prefer getting the instance
+     * returned by this method instead of instantiating a new one. 
+     * 
+     * @return the default instance.
+     */
+    public static PackageBuilderConfiguration getDefaultInstance() {
+    	return defaultIntance;
+    }
 
     public boolean isAllowMultipleNamespaces() {
         return allowMultipleNamespaces;
